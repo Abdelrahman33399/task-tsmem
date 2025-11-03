@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>المغامرة التفاعلية</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Tajawal', 'Simplified Arabic', Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #2c2620 0%, #3a332a 100%);
+      color: #f0e8d5;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(45, 40, 35, 0.85);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(193, 154, 107, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 28px;
+      color: #f0e8d5;
+      text-shadow: 0 0 10px rgba(193, 154, 107, 0.8),
+                   0 0 20px rgba(193, 154, 107, 0.6);
+      letter-spacing: 1px;
+    }
+
+    .progress-bar {
+      background: rgba(60, 55, 50, 0.7);
+      height: 12px;
+      border-radius: 6px;
+      margin-bottom: 25px;
+      overflow: hidden;
+      border: 1px solid #5a4a3a;
+    }
+
+    .progress {
+      height: 100%;
+      background: linear-gradient(90deg, #c19a6b, #e0c9a6);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .question-number {
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: bold;
+      color: #e0c9a6;
+    }
+
+    .question-text {
+      font-size: 20px;
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option {
+      padding: 14px;
+      background: rgba(60, 55, 50, 0.6);
+      border: 2px solid #5a4a3a;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-size: 17px;
+      color: #f0e8d5;
+    }
+
+    .option:hover {
+      background: rgba(80, 70, 60, 0.7);
+      border-color: #c19a6b;
+    }
+
+    .option.correct {
+      background: rgba(40, 167, 69, 0.2) !important;
+      border-color: #28a745 !important;
+      color: #d4edda;
+    }
+
+    .option.incorrect {
+      background: rgba(220, 53, 69, 0.2) !important;
+      border-color: #dc3545 !important;
+      color: #f8d7da;
+    }
+
+    .explanation {
+      margin-top: 18px;
+      padding: 14px;
+      background: rgba(50, 45, 40, 0.7);
+      border-radius: 10px;
+      font-size: 16px;
+      line-height: 1.5;
+      display: none;
+      border-left: 3px solid #c19a6b;
+    }
+
+    .explanation.show {
+      display: block;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, #c19a6b, #e0c9a6);
+      color: #2c2620;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s;
+      text-shadow: none;
+    }
+
+    .btn:hover {
+      background: linear-gradient(90deg, #d4b58b, #e8d5b8);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(193, 154, 107, 0.4);
+    }
+
+    .btn:disabled {
+      background: #5a4a3a;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* شاشة النتائج */
+    .result {
+      text-align: center;
+      font-size: 24px;
+      margin: 20px 0;
+      color: #e0c9a6;
+      text-shadow: 0 0 8px rgba(193, 154, 107, 0.7);
+    }
+
+    .result-summary {
+      font-size: 20px;
+      margin: 15px 0;
+      color: #f0e8d5;
+    }
+
+    .result-item {
+      background: rgba(50, 45, 40, 0.8);
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 12px;
+      border-right: 4px solid #c19a6b;
+      color: #f0e8d5;
+    }
+
+    .your-answer {
+      color: #ff9b9b;
+      font-weight: bold;
+    }
+
+    .correct-answer {
+      color: #a0e8a0;
+      font-weight: bold;
+    }
+
+    .retry-btn {
+      background: linear-gradient(90deg, #5a4a3a, #7a6a5a);
+      color: #e0c9a6;
+      margin-top: 30px;
+    }
+
+    .retry-btn:hover {
+      background: linear-gradient(90deg, #6a5a4a, #8a7a6a);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      .question-text {
+        font-size: 18px;
+      }
+      .option {
+        font-size: 16px;
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>المغامرة التفاعلية</h1>
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="question-number" id="question-number">السؤال 1 من 10</div>
+    <div id="quiz-container">
+      <!-- الأسئلة ستُعرض هنا -->
+    </div>
+    <button id="next-btn" class="btn" style="display:none;">التالي</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "ما العامل الجغرافي الذي ساعد على قيام الزراعة في بلاد الرافدين؟",
+        options: [
+          "المناخ الصحراوي",
+          "الجبال العالية",
+          "الصحاري الواسعة",
+          "توافر المياه العذبة والتربة الخصبة"
+        ],
+        correct: 3,
+        explanation: "ساعد توافر المياه العذبة من نهري دجلة والفرات والتربة الخصبة على قيام الزراعة وازدهار الحضارة."
+      },
+      {
+        question: "من هو الملك الذي وضع أول قانون مدون في بلاد الرافدين؟",
+        options: [
+          "سرجون الأول",
+          "حمورابي",
+          "أور نمو",
+          "سرجون الثاني"
+        ],
+        correct: 2,
+        explanation: "الملك أور نمو من الحضارة السومرية وضع أول قانون مدون، بينما حمورابي وضع قوانين لاحقة أكثر تفصيلاً."
+      },
+      {
+        question: "أين نشأت الحضارة البابلية؟",
+        options: [
+          "جنوب بلاد الرافدين",
+          "شمال بلاد الرافدين",
+          "وسط بلاد الرافدين",
+          "شرق بلاد الرافدين"
+        ],
+        correct: 2,
+        explanation: "استقر البابليون في وسط بلاد الرافدين، واتخذوا من مدينة بابل عاصمة لهم."
+      },
+      {
+        question: "ما أبرز إنجاز للسومريين في مجال الكتابة؟",
+        options: [
+          "الكتابة الهيروغليفية",
+          "الكتابة المسمارية",
+          "الأبجدية الفينيقية",
+          "الكتابة على البردي"
+        ],
+        correct: 1,
+        explanation: "اخترع السومريون الكتابة المسمارية، وهي رموز تشبه رؤوس المسامير، وكتبت على لوحات طينية."
+      },
+      {
+        question: "ما المدينة التي اتخذها الأكاديون عاصمة لهم؟",
+        options: [
+          "أور",
+          "بابل",
+          "آشور",
+          "أكاد"
+        ],
+        correct: 3,
+        explanation: "اتخذ الأكاديون مدينة أكاد عاصمة لهم بعد توحيد المدن السومرية."
+      },
+      {
+        question: "من هو الملك البابلي الشهير الذي وضع مجموعة من القوانين؟",
+        options: [
+          "أور نمو",
+          "سرجون الأول",
+          "حمورابي",
+          "سرجون الثاني"
+        ],
+        correct: 2,
+        explanation: "الملك حمورابي وضع تشريعات حمورابي التي نظمت مختلف جوانب الحياة في بابل."
+      },
+      {
+        question: "ما الذي اشتُهِر به الفينيقيون في مجال الكتابة؟",
+        options: [
+          "الكتابة المسمارية",
+          "الكتابة الهيروغليفية",
+          "أبجدية من 22 حرفاً",
+          "الكتابة على الحجارة"
+        ],
+        correct: 2,
+        explanation: "ابتكر الفينيقيون أبجدية من 22 حرفاً، وأصبحت أساساً للأبجديات الحديثة."
+      },
+      {
+        question: "ما المدن الفينيقية الرئيسية؟",
+        options: [
+          "أور، أكاد، بابل",
+          "آشور، نينوى، حران",
+          "جيبيل، بيروت، أوغاريت",
+          "طيبة، منف، الأقصر"
+        ],
+        correct: 2,
+        explanation: "من أبرز المدن الفينيقية: جبيل، بيروت، وأوغاريت، وكانت كل منها مملكة مستقلة."
+      },
+      {
+        question: "كيف تأثر المصريون القدماء بحضارات بلاد الرافدين؟",
+        options: [
+          "تعلموا صناعة الخزف",
+          "نقلوا فكرة البعث والخلود",
+          "استخدموا الأختام الأسطوانية",
+          "تعلموا الزراعة من النهرين"
+        ],
+        correct: 2,
+        explanation: "من مظاهر التأثر: نقل المصريين استخدام الأختام الأسطوانية وعبادة المعبودة عشتار."
+      },
+      {
+        question: "ما العلاقة بين الجغرافيا والنشاط الاقتصادي في فينيقيا؟",
+        options: [
+          "السهول الخصبة ساعدت على الزراعة فقط",
+          "الموقع الساحلي ساعد على التجارة البحرية",
+          "الجبال ساعدت على تعدين الذهب",
+          "الصحاري ساعدت على الرعي"
+        ],
+        correct: 1,
+        explanation: "بسبب موقعها على ساحل البحر المتوسط، اشتهر الفينيقيون بالتجارة البحرية والملاحة."
+      }
+    ];
+
+    let currentQuestion = 0;
+    let userAnswers = [];
+    const quizContainer = document.getElementById('quiz-container');
+    const nextButton = document.getElementById('next-btn');
+    const questionNumberEl = document.getElementById('question-number');
+    const progressEl = document.getElementById('progress');
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      questionNumberEl.textContent = `السؤال ${currentQuestion + 1} من ${questions.length}`;
+      progressEl.style.width = `${((currentQuestion) / questions.length) * 100}%`;
+
+      let optionsHTML = '';
+      q.options.forEach((option, index) => {
+        optionsHTML += `<div class="option" data-index="${index}">${option}</div>`;
+      });
+
+      quizContainer.innerHTML = `
+        <div class="question-text">${q.question}</div>
+        <div class="options">${optionsHTML}</div>
+        <div class="explanation" id="explanation">${q.explanation}</div>
+      `;
+
+      document.querySelectorAll('.option').forEach(opt => {
+        opt.addEventListener('click', selectAnswer);
+      });
+
+      document.getElementById('explanation').classList.remove('show');
+      nextButton.style.display = 'none';
+    }
+
+    function selectAnswer(e) {
+      const selectedOption = e.target;
+      const selectedIndex = parseInt(selectedOption.getAttribute('data-index'));
+      userAnswers[currentQuestion] = selectedIndex;
+
+      document.querySelectorAll('.option').forEach(opt => opt.classList.remove('correct', 'incorrect'));
+
+      if (selectedIndex === questions[currentQuestion].correct) {
+        selectedOption.classList.add('correct');
+      } else {
+        selectedOption.classList.add('incorrect');
+        document.getElementById('explanation').classList.add('show');
+      }
+
+      nextButton.style.display = 'block';
+    }
+
+    nextButton.addEventListener('click', () => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    });
+
+    function showResults() {
+      let score = 0;
+      userAnswers.forEach((answer, index) => {
+        if (answer === questions[index].correct) score++;
+      });
+
+      const percentage = Math.round((score / questions.length) * 100);
+      let resultsHTML = `<div class="result">اكتملت المغامرة!</div>`;
+      resultsHTML += `<div class="result-summary">درجتك: ${score} من ${questions.length} (${percentage}%)</div>`;
+      resultsHTML += `<h2 style="text-align:center; margin:20px 0; color:#e0c9a6; text-shadow: 0 0 8px rgba(193,154,107,0.6);">مراجعة إجاباتك:</h2>`;
+
+      questions.forEach((q, index) => {
+        const userAnswer = userAnswers[index];
+        const isCorrect = userAnswer === q.correct;
+        const userAnswerText = userAnswer !== null ? q.options[userAnswer] : "لم تجب";
+        const correctAnswerText = q.options[q.correct];
+
+        resultsHTML += `
+          <div class="result-item">
+            <strong>السؤال ${index + 1}:</strong> ${q.question}<br>
+            <span>إجابتك: </span><span class="your-answer">${userAnswerText}</span><br>
+            <span>الإجابة الصحيحة: </span><span class="correct-answer">${correctAnswerText}</span><br>
+            <em style="color:#c19a6b;">التفسير: ${q.explanation}</em>
+          </div>
+        `;
+      });
+
+      resultsHTML += `<button id="retry-btn" class="btn retry-btn">إعادة الاختبار</button>`;
+
+      quizContainer.innerHTML = resultsHTML;
+      nextButton.style.display = 'none';
+      document.querySelector('.progress-bar').style.display = 'none';
+      document.querySelector('.question-number').style.display = 'none';
+      document.querySelector('h1').textContent = "نهاية المغامرة!";
+
+      // ربط زر إعادة الاختبار
+      document.getElementById('retry-btn').addEventListener('click', restartQuiz);
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      userAnswers = [];
+      document.querySelector('.progress-bar').style.display = 'block';
+      document.querySelector('.question-number').style.display = 'block';
+      document.querySelector('h1').textContent = "المغامرة التفاعلية";
+      loadQuestion();
+    }
+
+    // بدء أول سؤال
+    loadQuestion();
+  </script>
+</body>
+</html>
